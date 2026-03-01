@@ -1,179 +1,163 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Sparkles, Palette, MessageCircle, Share2, Github } from "lucide-react";
-import Link from "next/link";
-import ChatAgent from "./components/ChatAgent";
-import PatternGenerator from "./components/PatternGenerator";
+import { useState, useEffect } from 'react';
+import { ChatAgent } from './components/ChatAgent';
+import { CategoryCard } from './components/CategoryCard';
+import { StatsCard } from './components/StatsCard';
+import { SearchBar } from './components/SearchBar';
+
+interface Category {
+  id: number;
+  code: string;
+  name: string;
+  name_en: string;
+  description: string | null;
+  icon: string;
+  sort_order: number;
+}
+
+// 十大门类数据（构建时嵌入）
+const categoriesData: Category[] = [
+  { id: 1, code: 'I', name: '民间文学', name_en: 'Folk Literature', icon: '📖', sort_order: 1, description: null },
+  { id: 2, code: 'II', name: '传统音乐', name_en: 'Traditional Music', icon: '🎵', sort_order: 2, description: null },
+  { id: 3, code: 'III', name: '传统舞蹈', name_en: 'Traditional Dance', icon: '💃', sort_order: 3, description: null },
+  { id: 4, code: 'IV', name: '传统戏剧', name_en: 'Traditional Opera', icon: '🎭', sort_order: 4, description: null },
+  { id: 5, code: 'V', name: '曲艺', name_en: 'Quyi', icon: '🎤', sort_order: 5, description: null },
+  { id: 6, code: 'VI', name: '传统体育、游艺与杂技', name_en: 'Traditional Sports', icon: '⚽', sort_order: 6, description: null },
+  { id: 7, code: 'VII', name: '传统美术', name_en: 'Traditional Fine Arts', icon: '🎨', sort_order: 7, description: '剪纸、年画、刺绣、泥塑、雕刻等传统造型艺术' },
+  { id: 8, code: 'VIII', name: '传统技艺', name_en: 'Traditional Crafts', icon: '🔨', sort_order: 8, description: '传统手工艺、制作技艺' },
+  { id: 9, code: 'IX', name: '传统医药', name_en: 'Traditional Medicine', icon: '💊', sort_order: 9, description: null },
+  { id: 10, code: 'X', name: '民俗', name_en: 'Folklore', icon: '🏮', sort_order: 10, description: null },
+];
 
 export default function Home() {
-  const [showChat, setShowChat] = useState(false);
-
-  const features = [
-    {
-      icon: <Sparkles className="w-8 h-8 text-red-500" />,
-      title: "AI纹样生成",
-      desc: "输入描述，AI生成剪纸、刺绣等传统纹样",
-    },
-    {
-      icon: <MessageCircle className="w-8 h-8 text-amber-500" />,
-      title: "非遗智能体",
-      desc: "24小时非遗文化问答助手",
-    },
-    {
-      icon: <Palette className="w-8 h-8 text-emerald-500" />,
-      title: "多模型支持",
-      desc: "支持OpenAI、Claude、百度、阿里等AI模型",
-    },
-  ];
-
-  const heritageTypes = [
-    { name: "剪纸", color: "bg-red-100 text-red-700", desc: "中国传统民间艺术" },
-    { name: "刺绣", color: "bg-pink-100 text-pink-700", desc: "苏绣湘绣蜀绣粤绣" },
-    { name: "年画", color: "bg-amber-100 text-amber-700", desc: "门神福字迎新春" },
-    { name: "蜡染", color: "bg-blue-100 text-blue-700", desc: "苗族传统技艺" },
-    { name: "泥塑", color: "bg-orange-100 text-orange-700", desc: "天津泥人张等" },
-  ];
+  const [categories] = useState<Category[]>(categoriesData);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-8 h-8 text-red-600" />
-              <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-amber-600 bg-clip-text text-transparent">
-                纹韵AI
-              </span>
-            </div>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="#generator" className="text-gray-600 hover:text-red-600 transition">纹样生成</Link>
-              <Link href="#heritage" className="text-gray-600 hover:text-red-600 transition">非遗百科</Link>
-              <button
-                onClick={() => setShowChat(!showChat)}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition"
-              >
-                <MessageCircle className="w-4 h-4" />
-                问非遗助手
-              </button>
-            </nav>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+      {/* Hero Section */}
+      <section className="relative py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="mb-6">
+            <span className="inline-block px-4 py-2 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+              🏛️ 国家级非物质文化遗产
+            </span>
           </div>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-red-600 via-amber-500 to-red-600 bg-clip-text text-transparent">
-              AI 赋能非遗文化传承
+          
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <span className="bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+              档案AI共学社
             </span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            使用人工智能技术生成传统非遗纹样，让千年文化在数字时代焕发新生
+          
+          <p className="text-xl text-gray-700 mb-4 max-w-3xl mx-auto">
+            探索非遗文化，传承千年文明
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="#generator"
-              className="px-8 py-4 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              开始创作
-            </a>
-            <button
-              onClick={() => setShowChat(true)}
-              className="px-8 py-4 border-2 border-gray-200 rounded-full font-medium hover:border-red-600 hover:text-red-600 transition"
-            >
-              咨询非遗助手
-            </button>
-          </div>
+          
+          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            基于 DeepSeek AI 的智能非遗知识平台，涵盖十大门类、1557个国家级项目、3610个子项
+            <br />
+            与您一起深入了解中华传统文化的博大精深
+          </p>
+
+          <SearchBar />
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 px-4 bg-white">
+      {/* Stats Section */}
+      <section className="py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((f, i) => (
-              <div key={i} className="p-6 rounded-2xl bg-slate-50 hover:shadow-lg transition">
-                <div className="mb-4">{f.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{f.title}</h3>
-                <p className="text-gray-600">{f.desc}</p>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatsCard icon="📚" label="十大门类" value={10} />
+            <StatsCard icon="🎯" label="国家级项目" value={1557} />
+            <StatsCard icon="📋" label="子项数量" value={3610} />
+            <StatsCard icon="🤖" label="AI助手" value="24h" />
           </div>
         </div>
       </section>
 
-      {/* Pattern Generator */}
-      <section id="generator" className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
+      {/* Categories Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">AI 纹样生成器</h2>
-            <p className="text-gray-600">选择非遗风格，描述你想要的图案，AI为你生成</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              非遗十大门类
+            </h2>
+            <p className="text-gray-600">
+              国家级非物质文化遗产代表性项目名录分类体系
+            </p>
           </div>
-          <PatternGenerator />
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {categories.map((cat) => (
+              <CategoryCard key={cat.id} category={cat} />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Heritage Types */}
-      <section id="heritage" className="py-16 px-4 bg-white">
+      {/* Features Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">支持的非遗类型</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {heritageTypes.map((type) => (
-              <div
-                key={type.name}
-                className={`p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition ${type.color}`}
-              >
-                <div className="text-2xl font-bold mb-1">{type.name}</div>
-                <div className="text-sm opacity-80">{type.desc}</div>
-              </div>
-            ))}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              平台特色
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">AI 智能问答</h3>
+              <p className="text-gray-600">
+                基于 DeepSeek 大模型，7×24小时在线解答非遗相关问题，
+                支持多轮对话，深度交流。
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <div className="text-4xl mb-4">📚</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">权威知识库</h3>
+              <p className="text-gray-600">
+                涵盖国务院公布的五批国家级非遗名录，
+                1557个项目、3610个子项详细资料。
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <div className="text-4xl mb-4">🌐</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">十大门类全覆盖</h3>
+              <p className="text-gray-600">
+                从民间文学到民俗，从传统音乐到传统技艺，
+                系统了解中华非遗文化全貌。
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* API Providers */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">多模型支持</h2>
-          <p className="text-gray-600 mb-8">预留多厂商API接口，灵活切换AI模型</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            {["OpenAI GPT-4", "Claude 3", "百度文心", "阿里通义", "讯飞星火", "智谱GLM"].map((model) => (
-              <span
-                key={model}
-                className="px-4 py-2 bg-white border rounded-full text-sm text-gray-600"
-              >
-                {model}
-              </span>
-            ))}
+      {/* Author Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-3xl p-8 md:p-12 text-white text-center">
+            <h2 className="text-3xl font-bold mb-4">关于档案AI共学社</h2>
+            <p className="text-lg text-red-100 mb-6">
+              这是一个致力于传播中国传统文化的AI知识平台
+              <br />
+              是作者在互联网和AI时代的文化名片
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <span className="px-4 py-2 bg-white/20 rounded-full">📧 联系作者</span>
+              <span className="px-4 py-2 bg-white/20 rounded-full">💬 交流学习</span>
+              <span className="px-4 py-2 bg-white/20 rounded-full">🤝 合作共创</span>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-4 border-t">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-red-600" />
-            <span className="font-bold">纹韵AI</span>
-          </div>
-          <div className="flex gap-6 text-gray-500">
-            <a href="#" className="hover:text-red-600 transition">关于我们</a>
-            <a href="#" className="hover:text-red-600 transition">使用条款</a>
-            <a href="#" className="hover:text-red-600 transition">隐私政策</a>
-          </div>
-          <div className="flex gap-4">
-            <Github className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer" />
-            <Share2 className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer" />
-          </div>
-        </div>
-      </footer>
 
       {/* Chat Agent */}
-      {showChat && <ChatAgent onClose={() => setShowChat(false)} />}
+      <ChatAgent />
     </div>
   );
 }

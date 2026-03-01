@@ -5,21 +5,9 @@ const nextConfig: NextConfig = {
   distDir: 'dist',
   images: {
     unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.replicate.delivery',
-      },
-      {
-        protocol: 'https',
-        hostname: 'oaidalleapiprodscus.blob.core.windows.net',
-      },
-    ],
   },
+  // 支持动态路由
+  trailingSlash: true,
 };
 
 export default nextConfig;

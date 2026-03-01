@@ -1,155 +1,223 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { X, Send, Bot, User, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from 'react';
+import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
 
 interface Message {
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
+  timestamp: Date;
 }
 
-interface ChatAgentProps {
-  onClose: () => void;
-}
+const SYSTEM_PROMPT = `你是"档案AI共学社"的非遗文化智能助手，专注于中国传统非物质文化遗产的传播与普及。
 
-export default function ChatAgent({ onClose }: ChatAgentProps) {
+你的知识覆盖：
+1. 十大门类：民间文学、传统音乐、传统舞蹈、传统戏剧、曲艺、传统体育游艺杂技、传统美术、传统技艺、传统医药、民俗
+2. 1557个国家级非遗项目
+3. 3610个子项详细资料
+
+回答风格：
+- 专业、准确、有温度
+- 引用具体项目时会说明所属门类和批次
+- 主动推荐相关项目或文化知识
+- 鼓励用户深入了解非遗文化
+
+你是档案AI共学社（作者名片）的AI代表，请体现专业性和文化传播使命感。`;
+
+export function ChatAgent() {
+  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
-      role: "assistant",
-      content: "你好！我是非遗文化助手小韵🎭\n\n我可以帮你：\n• 了解各种非遗文化知识\n• 介绍剪纸、刺绣、年画等传统艺术\n• 推荐适合你的非遗纹样风格\n• 解答关于AI生成的问题\n\n有什么想了解的非遗文化吗？",
-    },
+      role: 'assistant',
+      content: '你好！我是档案AI共学社的非遗文化助手🎭\n\n我可以帮您：\n• 了解十大门类非遗知识\n• 查询1557个国家级项目\n• 探索传统文化的魅力\n\n有什么想了解的非遗文化吗？',
+      timestamp: new Date()
+    }
   ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isOpen]);
 
   const handleSend = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || isLoading) return;
 
-    const userMessage = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
-    setLoading(true);
+    const userMessage: Message = {
+      role: 'user',
+      content: input.trim(),
+      timestamp: new Date()
+    };
 
-    // 模拟AI回复（后续可接入真实API）
-    setTimeout(() => {
-      const responses: Record<string, string> = {
-        剪纸: "剪纸是中国最古老的民间艺术之一，起源于汉代。主要流派有：\n• 北方剪纸：粗犷豪放\n• 南方剪纸：细腻秀丽\n• 陕西剪纸：造型夸张\n• 扬州剪纸：线条流畅",
-        刺绣: "中国四大名绣：\n• 苏绣：精细雅洁\n• 湘绣：形象生动\n• 蜀绣：针法严谨\n• 粤绣：色彩富丽\n\n你想了解哪种刺绣呢？",
-        年画: "年画是中国特有的绘画体裁，主要用于春节装饰。著名产地：\n• 天津杨柳青\n• 苏州桃花坞\n• 山东潍坊\n• 四川绵竹",
-        你好: "你好！很高兴为你介绍非遗文化😊",
-        谢谢: "不客气！有任何非遗相关问题随时问我~",
-      };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
 
-      let reply = "这是个很好的问题！关于非遗文化，我还有很多可以分享的。\n\n你可以问我：\n• 某种非遗技艺的详细介绍\n• 不同地区的非遗特色\n• 如何欣赏传统纹样\n• 非遗与现代设计的结合";
+    try {
+      // 构建消息列表
+      const apiMessages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...messages.slice(-5).map(m => ({ role: m.role, content: m.content })),
+        { role: 'user', content: userMessage.content }
+      ];
 
-      for (const [key, value] of Object.entries(responses)) {
-        if (userMessage.includes(key)) {
-          reply = value;
-          break;
-        }
+      // 调用 DeepSeek API
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer sk-8a7cf95b84ad455482aeecd55e4bccaa'
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: apiMessages,
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
       }
 
-      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      setLoading(false);
-    }, 1000);
+      const data = await response.json();
+      const reply = data.choices[0]?.message?.content || '抱歉，我暂时无法回答这个问题。';
+
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: reply,
+        timestamp: new Date()
+      }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      // 使用模拟回复
+      const mockReply = generateMockReply(userMessage.content);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: mockReply,
+        timestamp: new Date()
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const generateMockReply = (message: string): string => {
+    const keywords: Record<string, string> = {
+      '剪纸': '剪纸是中国传统美术类非遗项目，2006年列入第一批国家级名录。著名剪纸流派包括蔚县剪纸、扬州剪纸、安塞剪纸等。',
+      '年画': '木版年画是中国传统美术的重要门类，2006年列入第一批国家级名录。五大年画产地：天津杨柳青、苏州桃花坞、山东杨家埠、四川绵竹、河南朱仙镇。',
+      '刺绣': '中国四大名绣分别是苏绣、湘绣、蜀绣、粤绣，均于2006年列入第一批国家级名录。',
+      '泥塑': '泥塑是传统美术类非遗，以天津泥人张最为著名，创始于清代道光年间。',
+      '十大': '国家级非遗名录分为十大门类：民间文学（Ⅰ）、传统音乐（Ⅱ）、传统舞蹈（Ⅲ）、传统戏剧（Ⅳ）、曲艺（Ⅴ）、传统体育游艺杂技（Ⅵ）、传统美术（Ⅶ）、传统技艺（Ⅷ）、传统医药（Ⅸ）、民俗（Ⅹ）。'
+    };
+    
+    for (const [key, reply] of Object.entries(keywords)) {
+      if (message.includes(key)) {
+        return reply + '\n\n我是档案AI共学社的非遗助手，很高兴为您介绍中国传统文化！';
+      }
+    }
+    
+    return '感谢您的提问！作为档案AI共学社的非遗文化助手，我可以为您介绍中国十大门类的非物质文化遗产。我们目前已收录1557个国家级非遗项目、3610个子项的详细资料。请问您对哪个门类或项目感兴趣？';
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-amber-500 p-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-            <Bot className="w-5 h-5 text-red-600" />
-          </div>
-          <div className="text-white">
-            <div className="font-bold">非遗助手 · 小韵</div>
-            <div className="text-xs opacity-80">AI 智能体</div>
-          </div>
-        </div>
+    <>
+      {!isOpen && (
         <button
-          onClick={onClose}
-          className="text-white/80 hover:text-white transition"
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-red-600 to-orange-600 text-white p-4 rounded-full shadow-2xl hover:shadow-red-500/30 hover:scale-110 transition-all duration-300 group"
         >
-          <X className="w-5 h-5" />
+          <MessageCircle className="w-7 h-7 group-hover:animate-bounce" />
+          <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">AI</span>
         </button>
-      </div>
+      )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex gap-2 ${
-              msg.role === "user" ? "flex-row-reverse" : ""
-            }`}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                msg.role === "user"
-                  ? "bg-red-100"
-                  : "bg-gradient-to-r from-red-500 to-amber-500"
-              }`}
-            >
-              {msg.role === "user" ? (
-                <User className="w-4 h-4 text-red-600" />
-              ) : (
-                <Bot className="w-4 h-4 text-white" />
-              )}
+      {isOpen && (
+        <div className="fixed bottom-6 right-6 z-50 w-96 h-[500px] bg-white rounded-3xl shadow-2xl flex flex-col border border-gray-100 overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-red-600 to-orange-600 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">非遗文化助手</h3>
+                <p className="text-red-100 text-xs">档案AI共学社</p>
+              </div>
             </div>
-            <div
-              className={`max-w-[75%] p-3 rounded-2xl text-sm whitespace-pre-line ${
-                msg.role === "user"
-                  ? "bg-red-600 text-white rounded-br-none"
-                  : "bg-white shadow-sm rounded-bl-none"
-              }`}
-            >
-              {msg.content}
+            <button onClick={() => setIsOpen(false)} className="text-white/80 hover:text-white p-1">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            {messages.map((msg, index) => (
+              <div key={index} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  msg.role === 'user' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
+                }`}>
+                  {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                </div>
+                <div className={`max-w-[75%] p-3 rounded-2xl text-sm ${
+                  msg.role === 'user'
+                    ? 'bg-red-600 text-white rounded-br-none'
+                    : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'
+                }`}>
+                  <pre className="whitespace-pre-wrap font-sans">{msg.content}</pre>
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-orange-600" />
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-none p-3">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce"></span>
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce [animation-delay:0.1s]"></span>
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="p-4 bg-white border-t border-gray-100">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="问我关于非遗的问题..."
+                className="flex-1 px-4 py-2 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="p-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                <Send className="w-5 h-5" />
+              </button>
             </div>
           </div>
-        ))}
-        {loading && (
-          <div className="flex gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-amber-500 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
-            </div>
-            <div className="bg-white shadow-sm rounded-2xl rounded-bl-none p-3">
-              <Loader2 className="w-5 h-5 animate-spin text-red-600" />
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input */}
-      <div className="p-4 bg-white border-t">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="问我关于非遗的问题..."
-            className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:border-red-500"
-          />
-          <button
-            onClick={handleSend}
-            disabled={loading || !input.trim()}
-            className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            <Send className="w-5 h-5" />
-          </button>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
