@@ -3,9 +3,9 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "档案AI共学社 - 非遗文化知识平台",
+  title: "AI赋能非遗知识平台",
   description: "探索国家级非物质文化遗产，十大门类、1557个项目、3610个子项。AI智能问答，传承千年文明。",
-  keywords: ["非遗", "非物质文化遗产", "传统文化", "AI助手", "档案AI共学社"],
+  keywords: ["非遗", "非物质文化遗产", "传统文化", "AI助手", "AI赋能"],
 };
 
 export default function RootLayout({
@@ -23,10 +23,10 @@ export default function RootLayout({
               <Link href="/" className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-orange-600 
                                 rounded-xl flex items-center justify-center text-white font-bold">
-                  档
+                  非
                 </div>
                 <div>
-                  <span className="font-bold text-gray-900">档案AI共学社</span>
+                  <span className="font-bold text-gray-900">AI赋能非遗平台</span>
                   <span className="hidden sm:inline text-xs text-gray-500 ml-2">非遗文化知识平台</span>
                 </div>
               </Link>
@@ -59,11 +59,11 @@ export default function RootLayout({
           <div className="max-w-6xl mx-auto px-4">
             <div className="grid md:grid-cols-3 gap-8">
               <div>
-                <h3 className="text-xl font-bold mb-4">档案AI共学社</h3>
+                <h3 className="text-xl font-bold mb-4">AI赋能非遗知识平台</h3>
                 <p className="text-gray-400 text-sm">
                   探索非遗文化，传承千年文明。
                   <br />
-                  互联网和AI时代的文化名片。
+                  用AI技术守护非物质文化遗产。
                 </p>
               </div>
               
@@ -77,17 +77,18 @@ export default function RootLayout({
               </div>
               
               <div>
-                <h4 className="font-semibold mb-4">数据来源</h4>
+                <h4 className="font-semibold mb-4">关于作者</h4>
+                <p className="text-sm text-gray-400 mb-2">
+                  本平台由 <strong>档案AI共学社</strong> 出品
+                </p>
                 <p className="text-sm text-gray-400">
-                  国务院公布国家级非物质文化遗产名录
-                  <br />
-                  共五批 1557个项目 3610个子项
+                  作者在互联网和AI时代的文化名片
                 </p>
               </div>
             </div>
             
             <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-              <p>© 2024 档案AI共学社 - 非遗文化知识平台</p>
+              <p>© 2024 AI赋能非遗知识平台 · 档案AI共学社出品</p>
             </div>
           </div>
         </footer>

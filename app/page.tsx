@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ChatAgent } from './components/ChatAgent';
 import { CategoryCard } from './components/CategoryCard';
 import { StatsCard } from './components/StatsCard';
@@ -18,16 +18,16 @@ interface Category {
 
 // 十大门类数据（构建时嵌入）
 const categoriesData: Category[] = [
-  { id: 1, code: 'I', name: '民间文学', name_en: 'Folk Literature', icon: '📖', sort_order: 1, description: null },
-  { id: 2, code: 'II', name: '传统音乐', name_en: 'Traditional Music', icon: '🎵', sort_order: 2, description: null },
-  { id: 3, code: 'III', name: '传统舞蹈', name_en: 'Traditional Dance', icon: '💃', sort_order: 3, description: null },
-  { id: 4, code: 'IV', name: '传统戏剧', name_en: 'Traditional Opera', icon: '🎭', sort_order: 4, description: null },
-  { id: 5, code: 'V', name: '曲艺', name_en: 'Quyi', icon: '🎤', sort_order: 5, description: null },
-  { id: 6, code: 'VI', name: '传统体育、游艺与杂技', name_en: 'Traditional Sports', icon: '⚽', sort_order: 6, description: null },
-  { id: 7, code: 'VII', name: '传统美术', name_en: 'Traditional Fine Arts', icon: '🎨', sort_order: 7, description: '剪纸、年画、刺绣、泥塑、雕刻等传统造型艺术' },
+  { id: 1, code: 'I', name: '民间文学', name_en: 'Folk Literature', icon: '📖', sort_order: 1, description: '神话、传说、史诗、歌谣等口头传统' },
+  { id: 2, code: 'II', name: '传统音乐', name_en: 'Traditional Music', icon: '🎵', sort_order: 2, description: '民歌、器乐、传统舞蹈音乐等' },
+  { id: 3, code: 'III', name: '传统舞蹈', name_en: 'Traditional Dance', icon: '💃', sort_order: 3, description: '民族民间舞蹈、祭祀舞蹈等' },
+  { id: 4, code: 'IV', name: '传统戏剧', name_en: 'Traditional Opera', icon: '🎭', sort_order: 4, description: '京剧、昆曲、越剧、黄梅戏等' },
+  { id: 5, code: 'V', name: '曲艺', name_en: 'Quyi', icon: '🎤', sort_order: 5, description: '相声、评书、快板、大鼓等说唱艺术' },
+  { id: 6, code: 'VI', name: '传统体育、游艺与杂技', name_en: 'Traditional Sports', icon: '⚽', sort_order: 6, description: '传统武术、竞技、游戏、杂技等' },
+  { id: 7, code: 'VII', name: '传统美术', name_en: 'Traditional Fine Arts', icon: '🎨', sort_order: 7, description: '剪纸、年画、刺绣、泥塑、雕刻等' },
   { id: 8, code: 'VIII', name: '传统技艺', name_en: 'Traditional Crafts', icon: '🔨', sort_order: 8, description: '传统手工艺、制作技艺' },
-  { id: 9, code: 'IX', name: '传统医药', name_en: 'Traditional Medicine', icon: '💊', sort_order: 9, description: null },
-  { id: 10, code: 'X', name: '民俗', name_en: 'Folklore', icon: '🏮', sort_order: 10, description: null },
+  { id: 9, code: 'IX', name: '传统医药', name_en: 'Traditional Medicine', icon: '💊', sort_order: 9, description: '中医药、民族医药等传统医学' },
+  { id: 10, code: 'X', name: '民俗', name_en: 'Folklore', icon: '🏮', sort_order: 10, description: '传统节日、礼仪、民间信仰等' },
 ];
 
 export default function Home() {
@@ -46,7 +46,7 @@ export default function Home() {
           
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             <span className="bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-              档案AI共学社
+              AI赋能非遗知识平台
             </span>
           </h1>
           
@@ -136,27 +136,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Author Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-3xl p-8 md:p-12 text-white text-center">
-            <h2 className="text-3xl font-bold mb-4">关于档案AI共学社</h2>
-            <p className="text-lg text-red-100 mb-6">
-              这是一个致力于传播中国传统文化的AI知识平台
-              <br />
-              是作者在互联网和AI时代的文化名片
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <span className="px-4 py-2 bg-white/20 rounded-full">📧 联系作者</span>
-              <span className="px-4 py-2 bg-white/20 rounded-full">💬 交流学习</span>
-              <span className="px-4 py-2 bg-white/20 rounded-full">🤝 合作共创</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Chat Agent */}
+      {/* Chat Agent - 右下角悬浮AI助手 */}
       <ChatAgent />
     </div>
   );

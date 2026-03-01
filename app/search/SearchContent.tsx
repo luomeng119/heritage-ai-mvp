@@ -4,27 +4,14 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
-
-// 所有示例项目数据
-const allProjects = [
-  { id: 1, code: 'VII-1', name: '杨柳青木版年画', category_name: '传统美术', batch: '2006(第一批)', region: '天津市', description: '杨柳青木版年画产生于明代崇祯年间，继承了宋、元绘画的传统。' },
-  { id: 2, code: 'VII-2', name: '武强木版年画', category_name: '传统美术', batch: '2006(第一批)', region: '河北省武强县', description: '武强木版年画是河北省武强县传统民间工艺品，是中国民间特有的一种绘画体裁。' },
-  { id: 3, code: 'VII-3', name: '桃花坞木版年画', category_name: '传统美术', batch: '2006(第一批)', region: '江苏省苏州市', description: '桃花坞木版年画是江南地区的民间木版年画，是中国五大民间木版年画之一。' },
-  { id: 4, code: 'VII-4', name: '漳州木版年画', category_name: '传统美术', batch: '2006(第一批)', region: '福建省漳州市', description: '漳州木版年画始于宋代，盛于明清，以其独特的风格而闻名。' },
-  { id: 5, code: 'VII-5', name: '杨家埠木版年画', category_name: '传统美术', batch: '2006(第一批)', region: '山东省潍坊市', description: '杨家埠木版年画与天津杨柳青、苏州桃花坞并称中国三大木版年画。' },
-  { id: 6, code: 'VII-21', name: '苏绣', category_name: '传统美术', batch: '2006(第一批)', region: '江苏省苏州市', description: '苏绣是苏州地区刺绣产品的总称，是四大名绣之一。' },
-  { id: 7, code: 'VII-22', name: '湘绣', category_name: '传统美术', batch: '2006(第一批)', region: '湖南省长沙市', description: '湘绣是中国四大名绣之一，带有鲜明湘楚文化特色。' },
-  { id: 8, code: 'VII-23', name: '蜀绣', category_name: '传统美术', batch: '2006(第一批)', region: '四川省成都市', description: '蜀绣又名"川绣"，与苏绣、湘绣、粤绣齐名，为中国四大名绣之一。' },
-  { id: 9, code: 'VII-24', name: '粤绣', category_name: '传统美术', batch: '2006(第一批)', region: '广东省广州市', description: '粤绣是广州刺绣和潮州刺绣的总称，是中国四大名绣之一。' },
-  { id: 10, code: 'VII-31', name: '泥塑（天津泥人张）', category_name: '传统美术', batch: '2006(第一批)', region: '天津市', description: '天津泥人张彩塑是著名的汉族传统手工艺品，创始于清代道光年间。' },
-];
+import { searchProjects, allProjects, Project } from '@/lib/heritage-data';
 
 export default function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   
   const [query, setQuery] = useState(initialQuery);
-  const [results, setResults] = useState<typeof allProjects>([]);
+  const [results, setResults] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -40,12 +27,7 @@ export default function SearchContent() {
     setLoading(true);
     setSearched(true);
     
-    const filtered = allProjects.filter(p => 
-      p.name.includes(searchQuery) ||
-      p.description?.includes(searchQuery) ||
-      p.region?.includes(searchQuery) ||
-      p.category_name?.includes(searchQuery)
-    );
+    const filtered = searchProjects(searchQuery);
     
     setResults(filtered);
     setLoading(false);
@@ -85,6 +67,24 @@ export default function SearchContent() {
               </button>
             </div>
           </form>
+          
+          <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm">
+            <span className="text-gray-500">热门搜索：</span>
+            {['剪纸', '年画', '刺绣', '昆曲', '古琴', '京剧', '太极拳', '春节'].map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => {
+                  setQuery(tag);
+                  performSearch(tag);
+                  window.history.pushState(null, '', `/search?q=${encodeURIComponent(tag)}`);
+                }}
+                className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded-full transition-colors"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
         </div>
         
         {loading ? (
@@ -94,7 +94,7 @@ export default function SearchContent() {
           </div>
         ) : searched ? (
           <>
-            <div className="mb-6 text-gray-600">找到 {results.length} 个相关项目</div>
+            <div className="mb-6 text-gray-600">找到 {results.length} 个相关项目（共 {allProjects.length} 个项目）</div>
             
             {results.length > 0 ? (
               <div className="space-y-4">
@@ -132,7 +132,7 @@ export default function SearchContent() {
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
                 <p className="text-gray-600 mb-4">未找到与 "{query}" 相关的项目</p>
-                <p className="text-sm text-gray-500">试试搜索：剪纸、年画、刺绣、泥塑</p>
+                <p className="text-sm text-gray-500">试试搜索：剪纸、年画、刺绣、昆曲、古琴</p>
               </div>
             )}
           </>
@@ -140,6 +140,7 @@ export default function SearchContent() {
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
             <p className="text-gray-600">输入关键词开始搜索非遗项目</p>
+            <p className="text-sm text-gray-500 mt-2">知识库共收录 {allProjects.length} 个国家级非遗项目</p>
           </div>
         )}
       </div>
